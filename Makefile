@@ -26,7 +26,7 @@ clean:
 $(OUT_DIR)/akmenu4_ak2.zip:
 	mkdir -p $(OUT_DIR)/akmenu4_ak2/__rpg/
 	$(MAKE) -C akmenu4 akmenu4_ak2.nds
-	cp akmenu4/akmenu4_ak2.nds $(OUT_DIR)/akmenu4_ak2/__rpg/menu.nds
+	cp akmenu4/akmenu4_ak2.nds $(OUT_DIR)/akmenu4_ak2/__rpg/akmenu4.nds
 	$(MAKE) -C assets DST_DIR=$(OUT_DIR)/akmenu4_ak2/__rpg
 	cd $(OUT_DIR)/akmenu4_ak2 && zip -r $@ *
 
