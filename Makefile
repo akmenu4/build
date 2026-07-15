@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: 0BSD
 # SPDX-FileCopyrightText: 2026 lifehackerhansol
 
-.PHONY: all akmenu4 akmenu4_ak2 akmenu4_dsi akmenu4_pico clean akmenu4/akmenu4_ak2.nds
+.PHONY: all akmenu4 akmenu4_ak2 akmenu4_dsi akmenu4_pico nds-miniboot clean akmenu4/akmenu4_ak2.nds
 
 PLATFORM	:= ak2
 
@@ -33,7 +33,11 @@ clean:
 akmenu4/akmenu4_ak2.nds:
 	$(MAKE) -C akmenu4 akmenu4_ak2.nds
 
+nds-miniboot:
+	$(MAKE) -C $@
+
 # Final output
 $(OUT_DIR)/akmenu4_ak2.zip: akmenu4/akmenu4_ak2.nds assets
 	cp akmenu4/akmenu4_ak2.nds $(OUT_DIR)/akmenu4_ak2/__rpg/akmenu4.nds
+	cp nds-miniboot/dist/generic/akmenu4.nds nds-miniboot/dist/generic/dsedgei.dat nds-miniboot/dist/r4itt/_ds_menu.dat $(OUT_DIR)/akmenu4_ak2/
 	cd $(OUT_DIR)/akmenu4_ak2 && zip -r $@ *
