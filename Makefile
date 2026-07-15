@@ -1,11 +1,19 @@
 # SPDX-License-Identifier: 0BSD
 # SPDX-FileCopyrightText: 2026 lifehackerhansol
 
-.PHONY: akmenu4 akmenu4_ak2 akmenu4_dsi akmenu4_pico clean
+.PHONY: all akmenu4 akmenu4_ak2 akmenu4_dsi akmenu4_pico clean akmenu4/akmenu4_ak2.nds
 
+PLATFORM	:= ak2
+
+ASSETS_DIR	:= $(CURDIR)/assets
+ASSETS_DEST	:= $(CURDIR)/out/akmenu4_$(PLATFORM)/__rpg
 OUT_DIR	:= $(CURDIR)/out
 
-# phony packages
+# First build target must come before any include to avoid defaults becoming a single image etc
+all: $(OUT_DIR)/akmenu4_$(PLATFORM).zip
+
+include assets/Makefile
+
 akmenu4:
 	$(MAKE) -C akmenu4
 
@@ -22,11 +30,10 @@ clean:
 	$(MAKE) -C loader/pico-loader clean
 	rm -rf $(OUT_DIR)
 
-# actual packages
-$(OUT_DIR)/akmenu4_ak2.zip:
-	mkdir -p $(OUT_DIR)/akmenu4_ak2/__rpg/
+akmenu4/akmenu4_ak2.nds:
 	$(MAKE) -C akmenu4 akmenu4_ak2.nds
-	cp akmenu4/akmenu4_ak2.nds $(OUT_DIR)/akmenu4_ak2/__rpg/akmenu4.nds
-	$(MAKE) -C assets DST_DIR=$(OUT_DIR)/akmenu4_ak2/__rpg
-	cd $(OUT_DIR)/akmenu4_ak2 && zip -r $@ *
 
+# Final output
+$(OUT_DIR)/akmenu4_ak2.zip: akmenu4/akmenu4_ak2.nds assets
+	cp akmenu4/akmenu4_ak2.nds $(OUT_DIR)/akmenu4_ak2/__rpg/akmenu4.nds
+	cd $(OUT_DIR)/akmenu4_ak2 && zip -r $@ *
