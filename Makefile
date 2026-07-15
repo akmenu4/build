@@ -1,32 +1,73 @@
 # SPDX-License-Identifier: 0BSD
 # SPDX-FileCopyrightText: 2026 lifehackerhansol
 
-.PHONY: akmenu4 akmenu4_ak2 akmenu4_dsi akmenu4_pico clean
+.PHONY: all akmenu4 akmenu4_ak2 akmenu4_dsi akmenu4_pico nds-miniboot clean
 
-OUT_DIR	:= $(CURDIR)/out
+CONFIG	?=	ak2
 
-# phony packages
+include build/config/$(CONFIG).config
+
+OUT_DIR			:= $(CURDIR)/out
+RPG_DIR			:= $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/__rpg
+ASSETS_DIR		:= $(CURDIR)/assets
+ASSETS_DEST		:= $(RPG_DIR)
+AKLOADER_DIR	:= $(CURDIR)/loader/akloader-prebuilts
+AKLOADER_OUT	:= $(RPG_DIR)
+
+PACKAGE_DEPENDENCIES	:=	assets akmenu4_$(CONFIG_AKMENU4_LOADER)
+ifeq ($(CONFIG_AKMENU4_LOADER),pico)
+PACKAGE_DEPENDENCIES	+=	pico-loader
+endif
+ifeq ($(CONFIG_AKMENU4_LOADER),ak2)
+PACKAGE_DEPENDENCIES	+=	akloader
+endif
+
+ifneq ($(CONFIG_MINIBOOT_DIST),)
+PACKAGE_DEPENDENCIES	+=	nds-miniboot
+endif
+
+define miniboot-copy
+cp -f nds-miniboot/dist/$(1) $(RPG_DIR)/;
+endef
+
+# First build target must come before any include to avoid defaults becoming a single image etc
+all: $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM).zip
+
+include assets/Makefile
+include loader/akloader-prebuilts/Makefile
+
 akmenu4:
-	$(MAKE) -C akmenu4
+	@$(MAKE) -C akmenu4
 
-akmenu4_ak2: $(OUT_DIR)/akmenu4_ak2.zip
+akmenu4_ak2:
+	@$(MAKE) -C akmenu4 akmenu4_ak2.nds
 
 akmenu4_dsi:
-	$(MAKE) -C akmenu4 akmenu4.dsi
+	@$(MAKE) -C akmenu4 akmenu4.dsi
 
 akmenu4_pico:
-	$(MAKE) -C akmenu4 akmenu4_pico.nds
+	@$(MAKE) -C akmenu4 akmenu4_pico.nds
 
 clean:
-	$(MAKE) -C akmenu4 clean
-	$(MAKE) -C loader/pico-loader clean
-	rm -rf $(OUT_DIR)
+	@$(MAKE) -C akmenu4 clean
+	@$(MAKE) -C nds-miniboot clean
+	@$(MAKE) -C loader/pico-loader clean
+	@rm -rf $(OUT_DIR)
 
-# actual packages
-$(OUT_DIR)/akmenu4_ak2.zip:
-	mkdir -p $(OUT_DIR)/akmenu4_ak2/__rpg/
-	$(MAKE) -C akmenu4 akmenu4_ak2.nds
-	cp akmenu4/akmenu4_ak2.nds $(OUT_DIR)/akmenu4_ak2/__rpg/akmenu4.nds
-	$(MAKE) -C assets DST_DIR=$(OUT_DIR)/akmenu4_ak2/__rpg
-	cd $(OUT_DIR)/akmenu4_ak2 && zip -r $@ *
+nds-miniboot:
+	@$(MAKE) -C $@
 
+pico-loader:
+	@$(MAKE) -C loader/pico-loader PICO_PLATFORM=$(CONFIG_PICO_LOADER_PLATFORM)
+	@mkdir -p $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico
+	@cp loader/pico-loader/picoLoader7.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/picoLoader7.bin
+	@cp loader/pico-loader/picoLoader7.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/picoLoader9.bin
+	@cp loader/pico-loader/data/aplist.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/aplist.bin
+	@cp loader/pico-loader/data/patchlist.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/patchlist.bin
+	@cp loader/pico-loader/data/savelist.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/savelist.bin
+
+# Final output
+$(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM).zip: $(PACKAGE_DEPENDENCIES)
+	@cp akmenu4/akmenu4_$(CONFIG_AKMENU4_LOADER).nds $(RPG_DIR)/akmenu4.nds
+	@$(foreach miniboot,$(CONFIG_MINIBOOT_DIST),$(call miniboot-copy,$(miniboot)))
+	@cd $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM) && zip -r $@ *
