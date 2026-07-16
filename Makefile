@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: 0BSD
 # SPDX-FileCopyrightText: 2026 lifehackerhansol
 
-.PHONY: all akmenu4 akmenu4_ak2 akmenu4_dsi akmenu4_pico nds-miniboot clean
-
 CONFIG	?=	ak2
 
 include build/config/$(CONFIG).config
@@ -14,11 +12,11 @@ ASSETS_DEST		:= $(RPG_DIR)
 AKLOADER_DIR	:= $(CURDIR)/loader/akloader-prebuilts
 AKLOADER_OUT	:= $(RPG_DIR)
 
-PACKAGE_DEPENDENCIES	:=	assets akmenu4_$(CONFIG_AKMENU4_LOADER)
-ifeq ($(CONFIG_AKMENU4_LOADER),pico)
+PACKAGE_DEPENDENCIES	:=	assets akmenu4_$(CONFIG_AKMENU4_PLATFORM)
+ifeq ($(CONFIG_AKMENU4_PLATFORM),pico)
 PACKAGE_DEPENDENCIES	+=	pico-loader
 endif
-ifeq ($(CONFIG_AKMENU4_LOADER),ak2)
+ifeq ($(CONFIG_AKMENU4_PLATFORM),ak2)
 PACKAGE_DEPENDENCIES	+=	akloader
 endif
 
@@ -30,23 +28,16 @@ define miniboot-copy
 cp -f nds-miniboot/dist/$(1) $(RPG_DIR)/;
 endef
 
+.PHONY: all akmenu4_$(CONFIG_AKMENU4_PLATFORM) nds-miniboot clean
+
 # First build target must come before any include to avoid defaults becoming a single image etc
 all: $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM).zip
 
 include assets/Makefile
 include loader/akloader-prebuilts/Makefile
 
-akmenu4:
-	@$(MAKE) -C akmenu4
-
-akmenu4_ak2:
-	@$(MAKE) -C akmenu4 akmenu4_ak2.nds
-
-akmenu4_dsi:
-	@$(MAKE) -C akmenu4 akmenu4.dsi
-
-akmenu4_pico:
-	@$(MAKE) -C akmenu4 akmenu4_pico.nds
+akmenu4_$(CONFIG_AKMENU4_PLATFORM):
+	@$(MAKE) -C akmenu4 akmenu4_$(CONFIG_AKMENU4_PLATFORM).nds
 
 clean:
 	@$(MAKE) -C akmenu4 clean
@@ -55,7 +46,7 @@ clean:
 	@rm -rf $(OUT_DIR)
 
 nds-miniboot:
-	@$(MAKE) -C $@
+	$(MAKE) -C $@
 
 pico-loader:
 	@$(MAKE) -C loader/pico-loader PICO_PLATFORM=$(CONFIG_PICO_LOADER_PLATFORM)
@@ -68,6 +59,6 @@ pico-loader:
 
 # Final output
 $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM).zip: $(PACKAGE_DEPENDENCIES)
-	@cp akmenu4/akmenu4_$(CONFIG_AKMENU4_LOADER).nds $(RPG_DIR)/akmenu4.nds
+	@cp akmenu4/akmenu4_$(CONFIG_AKMENU4_PLATFORM).nds $(RPG_DIR)/akmenu4.nds
 	@$(foreach miniboot,$(CONFIG_MINIBOOT_DIST),$(call miniboot-copy,$(miniboot)))
 	@cd $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM) && zip -r $@ *
