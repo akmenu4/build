@@ -25,7 +25,19 @@ PACKAGE_DEPENDENCIES	+=	nds-miniboot
 endif
 
 define miniboot-copy
-cp -f nds-miniboot/dist/$(1) $(OUT_DIR)/;
+# Create a path with the first folder stripped,
+# to remove the platform name from nds-miniboot dist output
+# Works by replacing the parameter's slash with space to convert it to a list,
+# then use the first word to remove that substring from the parameter
+$(eval MINIBOOT_COPY_DEST=$(patsubst $(firstword $(subst /, ,$(1)))/%,%,$(1)))
+
+# Then pass the resulting string into $(dir) to get the directory path
+# mkdir won't fail even if the string turns empty as a result,
+# since we pass -p, and $(OUT_DIR) either already exists, or needs to exist
+mkdir -p $(OUT_DIR)/$(dir $(MINIBOOT_COPY_DEST))
+
+# Then copy the file there
+cp -f nds-miniboot/dist/$(1) $(OUT_DIR)/$(MINIBOOT_COPY_DEST)
 endef
 
 .PHONY: all akmenu4_$(CONFIG_AKMENU4_PLATFORM) nds-miniboot clean
