@@ -5,8 +5,8 @@ CONFIG	?=	ak2
 
 include build/config/$(CONFIG).config
 
-OUT_DIR			:= $(CURDIR)/out
-RPG_DIR			:= $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/__rpg
+OUT_DIR			:= $(CURDIR)/out/akmenu4_$(CONFIG_PLATFORM)
+RPG_DIR			:= $(OUT_DIR)/__rpg
 ASSETS_DIR		:= $(CURDIR)/assets
 ASSETS_DEST		:= $(RPG_DIR)
 AKLOADER_DIR	:= $(CURDIR)/loader/akloader-prebuilts
@@ -25,13 +25,13 @@ PACKAGE_DEPENDENCIES	+=	nds-miniboot
 endif
 
 define miniboot-copy
-cp -f nds-miniboot/dist/$(1) $(RPG_DIR)/;
+cp -f nds-miniboot/dist/$(1) $(OUT_DIR)/;
 endef
 
 .PHONY: all akmenu4_$(CONFIG_AKMENU4_PLATFORM) nds-miniboot clean
 
 # First build target must come before any include to avoid defaults becoming a single image etc
-all: $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM).zip
+all: $(OUT_DIR).zip
 
 include assets/Makefile
 include loader/akloader-prebuilts/Makefile
@@ -43,22 +43,22 @@ clean:
 	@$(MAKE) -C akmenu4 clean
 	@$(MAKE) -C nds-miniboot clean
 	@$(MAKE) -C loader/pico-loader clean
-	@rm -rf $(OUT_DIR)
+	@rm -rf out
 
 nds-miniboot:
 	$(MAKE) -C $@
 
 pico-loader:
 	@$(MAKE) -C loader/pico-loader PICO_PLATFORM=$(CONFIG_PICO_LOADER_PLATFORM)
-	@mkdir -p $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico
-	@cp loader/pico-loader/picoLoader7.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/picoLoader7.bin
-	@cp loader/pico-loader/picoLoader7.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/picoLoader9.bin
-	@cp loader/pico-loader/data/aplist.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/aplist.bin
-	@cp loader/pico-loader/data/patchlist.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/patchlist.bin
-	@cp loader/pico-loader/data/savelist.bin $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM)/_pico/savelist.bin
+	@mkdir -p $(OUT_DIR)/_pico
+	@cp loader/pico-loader/picoLoader7.bin $(OUT_DIR)/_pico/picoLoader7.bin
+	@cp loader/pico-loader/picoLoader7.bin $(OUT_DIR)/_pico/picoLoader9.bin
+	@cp loader/pico-loader/data/aplist.bin $(OUT_DIR)/_pico/aplist.bin
+	@cp loader/pico-loader/data/patchlist.bin $(OUT_DIR)/_pico/patchlist.bin
+	@cp loader/pico-loader/data/savelist.bin $(OUT_DIR)/_pico/savelist.bin
 
 # Final output
-$(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM).zip: $(PACKAGE_DEPENDENCIES)
+$(OUT_DIR).zip: $(PACKAGE_DEPENDENCIES)
 	@cp akmenu4/akmenu4_$(CONFIG_AKMENU4_PLATFORM).nds $(RPG_DIR)/akmenu4.nds
 	@$(foreach miniboot,$(CONFIG_MINIBOOT_DIST),$(call miniboot-copy,$(miniboot)))
-	@cd $(OUT_DIR)/akmenu4_$(CONFIG_PLATFORM) && zip -r $@ *
+	@cd $(OUT_DIR) && zip -r $@ *
