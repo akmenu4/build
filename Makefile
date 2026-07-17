@@ -40,7 +40,7 @@ mkdir -p $(OUT_DIR)/$(dir $(MINIBOOT_COPY_DEST))
 cp -f nds-miniboot/dist/$(1) $(OUT_DIR)/$(MINIBOOT_COPY_DEST)
 endef
 
-.PHONY: all akmenu4_$(CONFIG_AKMENU4_PLATFORM) nds-miniboot clean
+.PHONY: all akmenu4_$(CONFIG_AKMENU4_PLATFORM) nds-miniboot pico-loader clean
 
 # First build target must come before any include to avoid defaults becoming a single image etc
 all: $(OUT_DIR).zip
