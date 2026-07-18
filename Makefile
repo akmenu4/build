@@ -58,7 +58,7 @@ clean:
 	@rm -rf out
 
 nds-miniboot:
-	$(MAKE) -C $@
+	@$(MAKE) -C $@
 
 pico-loader:
 	@$(MAKE) -C loader/pico-loader PICO_PLATFORM=$(CONFIG_PICO_LOADER_PLATFORM)
