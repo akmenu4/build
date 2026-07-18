@@ -19,7 +19,9 @@ endif
 ifeq ($(CONFIG_AKMENU4_PLATFORM),ak2)
 PACKAGE_DEPENDENCIES	+=	akloader
 endif
-
+ifneq ($(CONFIG_AKMENU4_PLATFORM),dsi)
+PACKAGE_DEPENDENCIES	+=	$(RPG_DIR)/PassMeLoader.nds
+endif
 ifneq ($(CONFIG_MINIBOOT_DIST),)
 PACKAGE_DEPENDENCIES	+=	nds-miniboot
 endif
@@ -40,7 +42,7 @@ mkdir -p $(OUT_DIR)/$(dir $(MINIBOOT_COPY_DEST))
 cp -f nds-miniboot/dist/$(1) $(OUT_DIR)/$(MINIBOOT_COPY_DEST)
 endef
 
-.PHONY: all akmenu4_$(CONFIG_AKMENU4_PLATFORM) nds-miniboot pico-loader clean
+.PHONY: all akmenu4_$(CONFIG_AKMENU4_PLATFORM) nds-miniboot PassMeLoader pico-loader clean
 
 # First build target must come before any include to avoid defaults becoming a single image etc
 all: $(OUT_DIR).zip
@@ -54,11 +56,16 @@ akmenu4_$(CONFIG_AKMENU4_PLATFORM):
 clean:
 	@$(MAKE) -C akmenu4 clean
 	@$(MAKE) -C nds-miniboot clean
+	@$(MAKE) -C loader/PassMeLoader clean
 	@$(MAKE) -C loader/pico-loader clean
 	@rm -rf out
 
 nds-miniboot:
 	@$(MAKE) -C $@
+
+$(RPG_DIR)/PassMeLoader.nds: PassMeLoader
+	@mkdir -p $(dir $@)
+	$(MAKE) -C loader/PassMeLoader ROM=$@
 
 pico-loader:
 	@$(MAKE) -C loader/pico-loader PICO_PLATFORM=$(CONFIG_PICO_LOADER_PLATFORM)
