@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: 0BSD
 # SPDX-FileCopyrightText: 2026 lifehackerhansol
 
-CONFIG	?=	ak2
+CONFIG	?=	default
 
 include build/config/$(CONFIG).config
 
@@ -12,15 +12,12 @@ ASSETS_DEST		:= $(RPG_DIR)
 AKLOADER_DIR	:= $(CURDIR)/loader/akloader-prebuilts
 AKLOADER_OUT	:= $(RPG_DIR)
 
-PACKAGE_DEPENDENCIES	:=	assets akmenu4_$(CONFIG_AKMENU4_PLATFORM)
+PACKAGE_DEPENDENCIES	:=	assets akmenu4_$(CONFIG_AKMENU4_PLATFORM) $(RPG_DIR)/PassMeLoader.nds
 ifeq ($(CONFIG_AKMENU4_PLATFORM),pico)
 PACKAGE_DEPENDENCIES	+=	pico-loader
 endif
 ifeq ($(CONFIG_AKMENU4_PLATFORM),ak2)
 PACKAGE_DEPENDENCIES	+=	akloader
-endif
-ifneq ($(CONFIG_AKMENU4_PLATFORM),dsi)
-PACKAGE_DEPENDENCIES	+=	$(RPG_DIR)/PassMeLoader.nds
 endif
 ifneq ($(CONFIG_MINIBOOT_DIST),)
 PACKAGE_DEPENDENCIES	+=	nds-miniboot
