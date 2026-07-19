@@ -68,7 +68,7 @@ pico-loader:
 	@$(MAKE) -C loader/pico-loader PICO_PLATFORM=$(CONFIG_PICO_LOADER_PLATFORM)
 	@mkdir -p $(OUT_DIR)/_pico
 	@cp loader/pico-loader/picoLoader7.bin $(OUT_DIR)/_pico/picoLoader7.bin
-	@cp loader/pico-loader/picoLoader7.bin $(OUT_DIR)/_pico/picoLoader9.bin
+	@cp loader/pico-loader/picoLoader9_$(CONFIG_PICO_LOADER_PLATFORM).bin $(OUT_DIR)/_pico/picoLoader9.bin
 	@cp loader/pico-loader/data/aplist.bin $(OUT_DIR)/_pico/aplist.bin
 	@cp loader/pico-loader/data/patchlist.bin $(OUT_DIR)/_pico/patchlist.bin
 	@cp loader/pico-loader/data/savelist.bin $(OUT_DIR)/_pico/savelist.bin
